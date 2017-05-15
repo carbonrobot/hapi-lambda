@@ -34,10 +34,18 @@ exports.handler = (event, context, callback) => {
         
         if(err) throw err;
 
+        // lambda removes query string params from the url and places them into
+        // and object in event. Hapi expects them on the url path
+        let path = event.path;
+        const qs = Object.keys(event.queryStringParameters).map(key => { return key + '=' + event.queryStringParameters[key]; });
+        if(qs.length > 0){
+            path += '?' + qs.join('&');
+        }
+
         // map lambda event to hapi request
         const options = {
             method: event.httpMethod,
-            url: event.path,
+            url: path,
             payload: event.body,
             headers: event.headers,
             validate: false

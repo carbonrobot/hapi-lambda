@@ -31,7 +31,7 @@ exports.configure = function(plugins){
 exports.handler = (event, context, callback) => {
 
     server.makeReady((err) => {
-        
+
         if(err) throw err;
 
         // lambda removes query string params from the url and places them into
@@ -71,8 +71,6 @@ exports.handler = (event, context, callback) => {
                 headers: res.headers,
                 body: JSON.stringify(res.result)
             };
-
-            console.log('response', response);
 
             callback(null, response);
         });

@@ -69,7 +69,7 @@ exports.handler = (event, context, callback) => {
             const response = {
                 statusCode: res.statusCode,
                 headers: res.headers,
-                body: JSON.stringify(res.result)
+                body: typeof res.result === 'string' ? res.result : JSON.stringify(res.result)
             };
 
             callback(null, response);

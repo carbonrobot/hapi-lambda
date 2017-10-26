@@ -7,6 +7,8 @@ const Hapi = require('hapi');
 const server = new Hapi.Server();
 server.connection(); // no connection details for lambda
 
+const qs = require('qs');
+
 // flag so plugsin dont get reconfigured
 let loaded = false;
 
@@ -37,11 +39,9 @@ exports.handler = (event, context, callback) => {
         // lambda removes query string params from the url and places them into
         // and object in event. Hapi expects them on the url path
         let path = event.path;
-        if(event.queryStringParameters){
-            const qs = Object.keys(event.queryStringParameters).map(key => { return key + '=' + event.queryStringParameters[key]; });
-            if(qs.length > 0){
-                path += '?' + qs.join('&');
-            }
+        if (event.queryStringParameters) {
+            // Use qs library to encode URL parameters correctly
+            path += '?' + qs.stringify(event.queryStringParameters);
         }
 
         // map lambda event to hapi request

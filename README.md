@@ -5,6 +5,13 @@ hapi-lambda
 
 This module will allow you to host your Hapi.js application on Amazon Lambda.
 
+## Not compatible with Hapi 17+
+Please ensure your package.json file references 
+```
+"hapi": "^16.6.3"
+```
+or this module will crash.
+
 ## Usage
 
 Your application should already be configured as [plugins](https://hapijs.com/tutorials/plugins?lang=en_US):

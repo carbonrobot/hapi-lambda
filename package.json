@@ -4,7 +4,7 @@
   "description": "This plugin will host a Hapi.js application on Amazon Lambda",
   "main": "index.js",
   "scripts": {
-    "test": "jasmine test"
+    "test": "mocha --reporter spec"
   },
   "repository": {
     "type": "git",
@@ -27,6 +27,11 @@
     "url": "https://github.com/carbonrobot/hapi-lambda/issues"
   },
   "homepage": "https://github.com/carbonrobot/hapi-lambda#readme",
+  "devDependencies": {
+    "mocha": "^5.2.0",
+    "chai": "^4.1.2",
+    "hapi": "12.0.0"
+  },
   "peerDependencies": {
     "hapi": ">=12.0.0"
   }

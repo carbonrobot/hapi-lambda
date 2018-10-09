@@ -29,25 +29,15 @@ exports.configure = function(plugins){
 }
 
 const hapiRequestBuilder = (httpGatewayEvent, stripStageFromPath) => {
-  const extractCurrentStage = () => {
-
-    return httpGatewayEvent.requestContext ? httpGatewayEvent.requestContext.stage : null;
-
-  };
-
   const extractEventPath = () => {
-
-    const currentStage =  extractCurrentStage();
-
+    const currentStage =  httpGatewayEvent.requestContext ? httpGatewayEvent.requestContext.stage : null;
     const eventPath = httpGatewayEvent.path;
     if (!stripStageFromPath || !currentStage) {
       return eventPath;
     }
-
     const prefixToStrip = '/' + currentStage + '/';
 
     return eventPath.startsWith(prefixToStrip) ? eventPath.substr(prefixToStrip.length - 1) : eventPath;
-
   };
 
   const chainQueryParams = (pathWithoutParams) => {
@@ -59,12 +49,10 @@ const hapiRequestBuilder = (httpGatewayEvent, stripStageFromPath) => {
     }
 
     const qs = Object.keys(httpGatewayEvent.queryStringParameters).map(key => { return key + '=' + httpGatewayEvent.queryStringParameters[key]; });
-
     return qs.length === 0 ? pathWithoutParams : pathWithoutParams + '?' + qs.join('&');
-
   };
 
-  const path = chainQueryParams(extractEventPath(httpGatewayEvent),httpGatewayEvent);
+  const path = chainQueryParams(extractEventPath());
 
   // map lambda event to hapi request
   return {

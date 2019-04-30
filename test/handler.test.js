@@ -1,57 +1,129 @@
-var assert = require('assert');
+const { assert } = require('chai');
 
-const hapiLambda = require('../index');
-const {internalsForTest } = hapiLambda;
+const { transformRequest, transformResponse } = require('../index');
 
-const { hapiRequestBuilder, handlerFactory } = internalsForTest;
-const { sampleProxyHttpGatewayEvent, sampleProxyHttpGatewayEventFromCustomDomainWithCustomMapping } = require('./useCases').default;
+describe('transformRequest', () => {
 
-const fakeHapiServer = {
-  makeReady : function () {
-
-  }
-};
-
-describe("Main module tests", function() {
-
-  describe('Hapi request is created', function() {
-    it('Hapi request is created chaining the query params', function () {
-      let request = hapiRequestBuilder(sampleProxyHttpGatewayEvent,false);
-
-      assert.equal(request.url,'/test/hello?multiParam=2&singleParam=1');
-      assert.equal(request.method,'GET');
-      assert.equal(request.validate,false);
-      assert.equal(request.headers,sampleProxyHttpGatewayEvent.headers);
-      assert.equal(request.payload,sampleProxyHttpGatewayEvent.body);
-    });
-
-    it('Hapi request is created stripping the stage from the url', function () {
-      let request = hapiRequestBuilder(sampleProxyHttpGatewayEventFromCustomDomainWithCustomMapping,true);
-
-      assert.equal(request.url,'/test/hello?multiParam=2&singleParam=1');
-    });
-
-    it('Hapi request is created without stripping the stage from the url even if present', function () {
-      let request = hapiRequestBuilder(sampleProxyHttpGatewayEventFromCustomDomainWithCustomMapping,false);
-
-      assert.equal(request.url,'/dev/test/hello?multiParam=2&singleParam=1');
-    });
-
-
-  });
-
-  describe('handler creation via handlerFactory', function() {
-    const testEventLoop = (waitForEmptyLoop,expectedValue) => () => {
-      const createdHandler = handlerFactory(fakeHapiServer)(waitForEmptyLoop)
-      const context = {};
-      createdHandler({}, context);
-
-      assert.equal(context.callbackWaitsForEmptyEventLoop, expectedValue);
+  it('should return the url path', () => {
+    const event = {
+      path: '/api/something',
     };
 
-    it('handlerFactory can configure the handler for not waiting to an empty event loop', testEventLoop(false,false));
+    const { url } = transformRequest(event);
+    assert.equal(url, '/api/something');
+  });
 
-    it('handlerFactory can configure the handler for waiting to an empty event loop', testEventLoop(true,true));
+  it('should return the correct http method', () => {
+    const event = {
+      path: '/api/something',
+      httpMethod: 'GET'
+    };
+
+    const { method } = transformRequest(event);
+    assert.equal(method, 'GET');
+  });
+
+  it('should return the body as payload', () => {
+    const event = {
+      path: '/api/something',
+      body: '{}'
+    };
+
+    const { payload } = transformRequest(event);
+    assert.equal(payload, '{}');
+  });
+
+  it('should append a single query param to the path', () => {
+    const event = {
+      path: '/api/something',
+      queryStringParameters: {
+        user: '1'
+      },
+    };
+
+    const { url } = transformRequest(event);
+    assert.equal(url, '/api/something?user=1');
+  });
+
+  it('should append query params to the path', () => {
+    const event = {
+      path: '/api/something',
+      queryStringParameters: {
+        company: '2',
+        user: '1'
+      },
+    };
+
+    const { url } = transformRequest(event);
+    assert.equal(url, '/api/something?company=2&user=1');
+  });
+
+  it('should strip the stage from the path', () => {
+    const event = {
+      path: '/prod/api/something',
+      queryStringParameters: {
+        company: '2',
+        user: '1'
+      },
+      requestContext: {
+        stage: 'prod',
+      }
+    };
+
+    const { url } = transformRequest(event, { path: { stripStage: true } });
+    assert.equal(url, '/api/something?company=2&user=1');
+  });
+
+});
+
+describe('transformResponse', () => {
+
+  it('should stringify the body of a json response', () => {
+    const response = {
+      statusCode: 200,
+      headers: {},
+      result: { status: 'OK' }
+    };
+
+    const { body } = transformResponse(response);
+    assert.equal(body, JSON.stringify({ status: 'OK' }));
+  });
+
+  it('should return a string response without encoding', () => {
+    const response = {
+      statusCode: 200,
+      headers: {},
+      result: '<html></html>',
+    };
+
+    const { body } = transformResponse(response);
+    assert.equal(body, '<html></html>');
+  });
+
+  it('should preserve the headers', () => {
+    const response = {
+      statusCode: 200,
+      headers: { 'Content-Type': 'application/json' },
+      result: { status: 'OK' }
+    };
+
+    const { headers } = transformResponse(response);
+    assert.deepEqual(headers, { 'Content-Type': 'application/json' });
+  });
+
+  it('should strip restricted headers', () => {
+    const response = {
+      statusCode: 200,
+      headers: {
+        'Content-Type': 'application/json',
+        'content-encoding': 'something',
+        'transfer-encoding': 'something else',
+      },
+      result: { status: 'OK' }
+    };
+
+    const { headers } = transformResponse(response);
+    assert.deepEqual(headers, { 'Content-Type': 'application/json' });
   });
 
 });

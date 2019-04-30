@@ -1,7 +1,7 @@
 {
   "name": "hapi-lambda",
   "version": "1.0.0",
-  "description": "This plugin will host a Hapi.js application on Amazon Lambda",
+  "description": "Support Hapi 17+ applications on Amazon Lambda",
   "main": "index.js",
   "scripts": {
     "test": "mocha --reporter spec"

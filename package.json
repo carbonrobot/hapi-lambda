@@ -33,6 +33,6 @@
     "mocha": "^5.2.0"
   },
   "peerDependencies": {
-    "hapi": ">=17.0.0"
+    "@hapi/hapi": ">=17.0.0"
   }
 }

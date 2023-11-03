@@ -1,12 +1,12 @@
 hapi-lambda
 -------------
 
+CAUTION: This package is ancient in Node.js terms, and is no longer maintained.
+
 [![npm version](https://badge.fury.io/js/hapi-lambda.svg)](https://badge.fury.io/js/hapi-lambda)
 
 This module will allow you to host your Hapijs (17+) application on Amazon Lambda with node 8.10+. 
 If you are using API Gateway, you should set the Gateway to "proxy" mode.
-
-CAUTION: There are significant breaking changes between this version and the pre-1.0 versions of this module.
 
 ## Usage
 
